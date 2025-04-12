@@ -1,0 +1,151 @@
+import { useState, useEffect } from "react";
+
+export default function ZloyRoyLanding() {
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ name: "", phone: "" });
+  const [timer, setTimer] = useState(2400); // 5 минут в секундах
+
+  useEffect(() => {
+    const countdown = setInterval(() => {
+      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(countdown);
+  }, []);
+
+  const formatTime = (seconds) => {
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `00:${m}:${s}`;
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+
+    const telegramToken = "7891812472:AAFgGoCFmLqfdAgsE3qFZNEtnLeOSXTm0wc";
+    const chatId = "654680309";
+    const message = `Новая заявка:\nИмя: ${formData.name}\nТелефон: ${formData.phone}`;
+
+    fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+      }),
+    })
+      .then(() => {
+        alert("Заявка отправлена! Мы свяжемся с вами в ближайшее время.");
+        setFormData({ name: "", phone: "" });
+        setShowForm(false);
+      })
+      .catch((error) => {
+        console.error("Ошибка при отправке в Telegram:", error);
+        alert("Произошла ошибка. Попробуйте ещё раз позже.");
+      });
+  };
+
+  return (
+    <div className="bg-yellow-50 min-h-screen text-brown-800">
+      {/* Hero Section */}
+      <section className="py-16 px-4 text-center bg-[url('/honey-bg.jpg')] bg-cover bg-center">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">Натуральные продукты пчеловодства от "Злого Роя"</h1>
+        <p className="text-lg md:text-xl mb-6">Мёд, перга, прополис и другие дары улья — с заботой о вашем здоровье</p>
+        <button onClick={() => setShowForm(true)} className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg transition-all">Заказать сейчас</button>
+      </section>
+
+      {/* Timer Section */}
+      <section className="bg-red-100 py-8 text-center">
+        <h2 className="text-2xl font-bold mb-2 text-red-700">🔥 Успейте заказать по акции!</h2>
+        <p className="mb-4">До конца распродажи осталось:</p>
+        <div className="text-3xl font-mono text-red-800">{formatTime(timer)}</div>
+      </section>
+
+      {/* Reviews */}
+      <section className="bg-white py-12 px-6">
+        <h2 className="text-3xl font-semibold mb-6 text-center">Отзывы наших клиентов</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            {
+              name: "Анна, 34 года",
+              text: "Беру мёд только у вас — вкус детства и здоровье семьи!",
+              img: "/review1.jpg"
+            },
+            {
+              name: "Марина, 42 года",
+              text: "Перга — супер продукт, почувствовала прилив сил!",
+              img: "/review2.jpg"
+            },
+            {
+              name: "Екатерина, 38 лет",
+              text: "Прополис отлично помогает при простуде. Спасибо за качество!",
+              img: "/review3.jpg"
+            }
+          ].map((review, i) => (
+            <div key={i} className="bg-yellow-50 rounded-2xl p-6 shadow text-center">
+              <img src={review.img} alt={review.name} className="w-20 h-20 rounded-full mx-auto mb-4 object-cover" />
+              <p className="italic mb-2">"{review.text}"</p>
+              <p className="font-semibold">— {review.name}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-yellow-100 py-12 px-6 text-center">
+        <h2 className="text-2xl font-semibold mb-4">Попробуйте продукцию "Злого Роя" — и почувствуйте разницу!</h2>
+        <button onClick={() => setShowForm(true)} className="bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-6 rounded-xl shadow-lg">Оформить заказ</button>
+      </section>
+
+      {/* Map Section */}
+      <section className="py-12 px-6">
+        <h2 className="text-3xl font-semibold mb-6 text-center">Наш магазин</h2>
+        <div className="relative w-full h-80">
+          <iframe 
+            src="https://yandex.ru/map-widget/v1/?um=constructor%3A7e47eaff42b68568a358fc4e2160b8705d564bb015cf29cc9b066a3129a6e83a&source=constructor" 
+            width="100%" 
+            height="100%" 
+            frameBorder="0" 
+            allowFullScreen={true}>
+          </iframe>
+        </div>
+        <p className="text-center mt-4">Город Минск, Улица Якубовского 36</p>
+      </section>
+
+      {/* Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <form onSubmit={handleFormSubmit} className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Оформить заказ</h3>
+            <input
+              type="text"
+              placeholder="Ваше имя"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full border p-2 mb-4 rounded-xl"
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Телефон"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              className="w-full border p-2 mb-4 rounded-xl"
+              required
+            />
+            <button type="submit" className="bg-yellow-600 hover:bg-yellow-700 text-white w-full py-2 rounded-xl">Отправить</button>
+            <button type="button" onClick={() => setShowForm(false)} className="mt-4 text-sm underline text-gray-500">Отмена</button>
+          </form>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="py-8 px-6 text-center text-sm text-gray-600">
+        <div className="mb-2">Свяжитесь с нами: <a href="tel:+375291234567" className="text-blue-600 underline">+375 (29) 123-45-67</a></div>
+        © 2025 Злой Рой. Все права защищены. | <a href="#" className="underline">Политика конфиденциальности</a>
+      </footer>
+    </div>
+  );
+}
